@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Маленькая иконка уведомления: одноцветный «чек» с зубчатым низом -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M5,2h14v19l-2.33,-1.5L14.33,21L12,19.5L9.67,21L7.33,19.5L5,21ZM8,7v1.6h8V7ZM8,10.5v1.6h8v-1.6ZM8,14v1.6h5V14Z" />
+</vector>

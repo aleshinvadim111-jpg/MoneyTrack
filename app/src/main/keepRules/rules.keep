@@ -1,0 +1,42 @@
+# Правила R8 для MoneyTrack.
+# AGP объединяет все файлы *.keep из src/main/keepRules и передаёт их R8
+# вместе со стандартными правилами proguard-android-optimize.txt.
+# Подробнее: https://d.android.com/r/tools/r8/keep-rules
+#
+# Всё, что здесь не упомянуто, R8 вправе удалить (если не используется)
+# и переименовать (MoneyRepository -> a.b и т. п.). Правила ниже нужны только там,
+# где код ищется по имени через рефлексию или имя сохраняется на диск.
+
+# --- Отладка: понятные стектрейсы ---
+# Номера строк остаются, а имя исходного файла заменяется на "SourceFile".
+# Восстановить настоящие имена классов в стектрейсе можно по mapping.txt
+# (Android Studio: Analyze -> Analyze Stack Trace / утилита retrace).
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# --- Retrofit + Gson: курсы валют ЦБ ---
+# Gson заполняет поля ответа через рефлексию: классы и поля нельзя переименовывать и удалять.
+-keep class com.example.moneytrack.data.network.CbrDailyResponse { *; }
+-keep class com.example.moneytrack.data.network.CbrValute { *; }
+# Generic-сигнатуры (Map<String, CbrValute>) и аннотации (@SerializedName, @GET)
+# читаются во время выполнения — без них курсы придут пустыми.
+-keepattributes Signature,InnerClasses,EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations,AnnotationDefault
+# Остальное для Retrofit (интерфейс CbrApi, suspend-функции) уже есть
+# во встроенных правилах самой библиотеки (consumer rules).
+
+# --- Room: категории и периоды хранятся в БД строками (Category.name / valueOf) ---
+# Имена констант enum не должны меняться, иначе сохранённые траты и подписки
+# прочитаются неверно.
+-keepclassmembers enum com.example.moneytrack.model.Category { <fields>; }
+-keepclassmembers enum com.example.moneytrack.model.SubPeriod { <fields>; }
+
+# --- WorkManager: напоминания о подписках ---
+# WorkManager сохраняет имя класса воркера в своей базе и создаёт его через рефлексию.
+# Библиотека уже содержит похожее правило; оставляем явное, чтобы имя не зависело от её версии.
+-keep class com.example.moneytrack.notifications.SubscriptionReminderWorker {
+    <init>(android.content.Context, androidx.work.WorkerParameters);
+}
+
+# Room, Compose, Navigation, Lifecycle, OkHttp поставляют свои правила вместе с библиотеками,
+# дополнительных правил для них не нужно.

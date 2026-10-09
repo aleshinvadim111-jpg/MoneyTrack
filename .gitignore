@@ -1,0 +1,28 @@
+# --- Android Studio / IntelliJ ---
+*.iml
+.idea/
+.DS_Store
+/captures
+.externalNativeBuild
+.cxx
+
+# --- Gradle и Kotlin: кэши и результаты сборки ---
+.gradle/
+.kotlin/
+build/
+/local.properties
+local.properties
+
+# --- Готовые сборки (APK выкладываем в GitHub Releases, а не в код) ---
+/app/release/
+/app/debug/
+*.apk
+*.aab
+
+# --- Ключи подписи: НИКОГДА не коммитить ---
+*.jks
+*.keystore
+keystore.properties
+
+# --- Логи ---
+*.log
