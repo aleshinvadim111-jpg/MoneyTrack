@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -28,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -230,6 +232,11 @@ fun DatePickerField(label: String, dateMillis: Long, onDateChange: (Long) -> Uni
 
     if (open) {
         val state = rememberDatePickerState(initialSelectedDateMillis = Dates.localToPicker(dateMillis))
+        // Дата, выбранная в календаре до перехода в режим ручного ввода (иконка-карандаш)
+        var dateBeforeInput by remember { mutableStateOf(state.selectedDateMillis) }
+        LaunchedEffect(state.displayMode) {
+            if (state.displayMode == DisplayMode.Input) dateBeforeInput = state.selectedDateMillis
+        }
         val colors = DatePickerDefaults.colors(
             containerColor = Paper,
             selectedDayContainerColor = Ink,
@@ -246,7 +253,17 @@ fun DatePickerField(label: String, dateMillis: Long, onDateChange: (Long) -> Uni
                 }) { Text("Готово", color = Ink, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(onClick = { open = false }) { Text("Отмена", color = Muted) }
+                TextButton(onClick = {
+                    if (state.displayMode == DisplayMode.Input) {
+                        // Ручной ввод: «Отмена» возвращает к календарю, а не закрывает диалог.
+                        // Недописанную дату откатываем к той, что была до переключения на ввод.
+                        state.selectedDateMillis = dateBeforeInput
+                        dateBeforeInput?.let { state.displayedMonthMillis = it }
+                        state.displayMode = DisplayMode.Picker
+                    } else {
+                        open = false
+                    }
+                }) { Text("Отмена", color = Muted) }
             },
             colors = colors,
         ) {
